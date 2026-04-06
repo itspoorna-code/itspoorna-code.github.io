@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>App Instrumentation — Confluence Page</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; color: #172B4D; line-height: 1.7; max-width: 860px; margin: 0 auto; padding: 40px 32px; background: #fff; }
+  h1 { font-size: 28px; font-weight: 600; color: #172B4D; margin-bottom: 4px; }
+  h2 { font-size: 20px; font-weight: 600; color: #172B4D; margin-top: 36px; margin-bottom: 10px; border-bottom: 2px solid #DFE1E6; padding-bottom: 6px; }
+  h3 { font-size: 16px; font-weight: 600; color: #172B4D; margin-top: 24px; margin-bottom: 6px; }
+  p { margin: 10px 0; }
+  code { background: #F4F5F7; color: #172B4D; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 13px; padding: 2px 6px; border-radius: 4px; border: 1px solid #DFE1E6; }
+  pre { background: #F4F5F7; border: 1px solid #DFE1E6; border-radius: 6px; padding: 16px 20px; overflow-x: auto; font-size: 13px; line-height: 1.6; }
+  pre code { background: none; border: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th { background: #F4F5F7; text-align: left; padding: 10px 14px; border: 1px solid #DFE1E6; font-weight: 600; color: #172B4D; }
+  td { padding: 10px 14px; border: 1px solid #DFE1E6; vertical-align: top; }
+  tr:nth-child(even) td { background: #FAFBFC; }
+  .info-panel { background: #DEEBFF; border-left: 4px solid #0052CC; border-radius: 4px; padding: 14px 18px; margin: 16px 0; }
+  .info-panel strong { color: #0052CC; }
+  .note-panel { background: #FFFAE6; border-left: 4px solid #FF991F; border-radius: 4px; padding: 14px 18px; margin: 16px 0; }
+  .note-panel strong { color: #FF991F; }
+  .step-block { border: 1px solid #DFE1E6; border-radius: 8px; padding: 18px 22px; margin: 16px 0; }
+  .step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .step-badge { background: #0052CC; color: #fff; font-size: 13px; font-weight: 700; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step-badge.teal  { background: #00875A; }
+  .step-badge.purple{ background: #6554C0; }
+  .step-badge.amber { background: #FF991F; }
+  .step-badge.coral { background: #DE350B; }
+  .step-title { font-size: 16px; font-weight: 600; }
+  ul, ol { padding-left: 24px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  .meta-row { display: flex; gap: 32px; font-size: 13px; color: #5E6C84; margin: 6px 0 28px; }
+  .tag { display: inline-block; background: #EBECF0; color: #172B4D; font-size: 12px; font-weight: 500; padding: 2px 10px; border-radius: 12px; margin-right: 4px; }
+  hr { border: none; border-top: 1px solid #DFE1E6; margin: 32px 0; }
+  .app-nav { display: flex; gap: 14px; margin: 20px 0; flex-wrap: wrap; }
+  .app-nav a { display: flex; align-items: center; gap: 10px; text-decoration: none; padding: 14px 20px; border-radius: 8px; border: 1.5px solid #DFE1E6; font-size: 14px; font-weight: 600; color: #172B4D; transition: border-color 0.15s, box-shadow 0.15s; flex: 1; min-width: 200px; }
+  .app-nav a:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-color: #0052CC; }
+  .app-nav .flag { font-size: 22px; line-height: 1; }
+  .app-nav .app-label { display: flex; flex-direction: column; }
+  .app-nav .app-name { font-size: 14px; font-weight: 600; color: #172B4D; }
+  .app-nav .app-sub  { font-size: 12px; font-weight: 400; color: #5E6C84; margin-top: 1px; }
+  .app-nav a.ww  { border-left: 4px solid #00B140; }
+  .app-nav a.toko { border-left: 4px solid #42B549; }
+  .app-nav a.tala { border-left: 4px solid #FF6D00; }
+  .app-section { border: 1.5px solid #DFE1E6; border-radius: 10px; padding: 24px 26px; margin: 24px 0; }
+  .app-section.ww   { border-top: 4px solid #00B140; }
+  .app-section.toko { border-top: 4px solid #42B549; }
+  .app-section.tala { border-top: 4px solid #FF6D00; }
+  .app-section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .app-section-flag { font-size: 28px; }
+  .app-section-title { font-size: 18px; font-weight: 700; color: #172B4D; margin: 0; }
+  .app-section-subtitle { font-size: 13px; color: #5E6C84; margin-top: 2px; }
+  .run-step { display: flex; gap: 14px; margin: 12px 0; align-items: flex-start; }
+  .run-step-num { background: #172B4D; color: #fff; font-size: 12px; font-weight: 700; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .run-step-body { flex: 1; }
+  .run-step-body p { margin: 4px 0; font-size: 14px; }
+  .time-badge { display: inline-block; background: #FFFAE6; color: #974F0C; border: 1px solid #FFD700; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 12px; margin-left: 8px; }
+  .start-time { display: inline-flex; align-items: center; gap: 6px; background: #E3FCEF; color: #006644; border: 1px solid #ABF5D1; font-size: 13px; font-weight: 600; padding: 5px 14px; border-radius: 6px; margin-bottom: 16px; }
+  .terminal-badge { display: inline-block; background: #1B1F23; color: #D1D5DA; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-right: 6px; font-family: monospace; }
+</style>
+</head>
+<body>
+
+<h1>App Instrumentation — Data Collection &amp; Pipeline</h1>
+<div class="meta-row">
+  <span>Space: <strong>Data Engineering</strong></span>
+  <span>Owner: <em>[Your Name]</em></span>
+  <span>Status: <span class="tag">In Progress</span></span>
+  <span>Last Updated: <em>[Date]</em></span>
+</div>
+
+<div class="info-panel">
+  <strong>Overview:</strong> This page documents the end-to-end app instrumentation process for 3 apps. It covers how crawl data is collected, how it is extracted locally using the CMv3 API, and how the resulting product data is pushed to Kafka via a scheduled crontab job.
+</div>
+
+<p style="font-size:13px;color:#5E6C84;margin-top:20px;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Jump to app run steps</p>
+<div class="app-nav">
+  <a href="#woolworths" class="ww">
+    <span class="flag">🇦🇺</span>
+    <span class="app-label">
+      <span class="app-name">Woolworths_app-AU</span>
+      <span class="app-sub">Starts 4:30 AM &middot; ~2 hrs total</span>
+    </span>
+  </a>
+  <a href="#tokopedia" class="toko">
+    <span class="flag">🇮🇩</span>
+    <span class="app-label">
+      <span class="app-name">Tokopedia_app-ID</span>
+      <span class="app-sub">Starts 8:30 AM &middot; ~2.5 hrs total</span>
+    </span>
+  </a>
+  <a href="#talabat" class="tala">
+    <span class="flag">🇦🇪</span>
+    <span class="app-label">
+      <span class="app-name">Talabat_app-AE</span>
+      <span class="app-sub">~2 hrs total</span>
+    </span>
+  </a>
+</div>
+
+<hr>
+
+<h2>1. Scope</h2>
+<p>App instrumentation is being set up for the following 3 applications:</p>
+<table>
+  <tr><th>#</th><th>App Name</th><th>Region</th><th>Crawl Start Time</th><th>Status</th></tr>
+  <tr><td>1</td><td><a href="#woolworths">Woolworths_app-AU</a></td><td>🇦🇺 Australia</td><td>4:30 AM</td><td><span class="tag">Active</span></td></tr>
+  <tr><td>2</td><td><a href="#tokopedia">Tokopedia_app-ID</a></td><td>🇮🇩 Indonesia</td><td>8:30 AM</td><td><span class="tag">Active</span></td></tr>
+  <tr><td>3</td><td><a href="#talabat">Talabat_app-AE</a></td><td>🇦🇪 UAE</td><td>—</td><td><span class="tag">Active</span></td></tr>
+</table>
+
+<hr>
+
+<h2>2. High-Level Architecture</h2>
+<p>The instrumentation pipeline consists of five sequential stages:</p>
+<ol>
+  <li><strong>App Instrumentation Crawls</strong> — Run crawl jobs per app to capture XML dumps and URL screenshots.</li>
+  <li><strong>Seed File Ingestion</strong> — Load the seed file containing <code>meta_info</code> and <code>seed_url</code> for each app.</li>
+  <li><strong>Local Data Extraction via CMv3</strong> — Use <code>extractor.py</code> to fetch regex configs from the CMv3 API and apply them on the XML dumps to extract product data.</li>
+  <li><strong>JSON Output → Workspace Push</strong> — The extraction output (a JSON file mapping keywords/categories to products) is pushed to the workspace.</li>
+  <li><strong>Crontab → Kafka Push</strong> — A scheduled crontab job monitors the workspace. When a new file is detected in today's data folder, data is pushed to Kafka.</li>
+</ol>
+
+<div class="note-panel">
+  <strong>Note:</strong> Refer to the process flow diagram in the Confluence diagram macro or the attached architecture image for a visual overview of these stages.
+</div>
+
+<hr>
+
+<h2>3. App Crawl Run Instructions</h2>
+<p>The following sections describe the exact steps to run the instrumentation crawl for each app. Each app requires two terminals — one for Appium and one for running the Python scripts.</p>
+
+<div class="note-panel">
+  <strong>Before starting:</strong> Ensure Appium is installed and the target device/emulator is connected and ready. Python environment must be set up under <code>App_Instrumentation/App_env/</code>.
+</div>
+
+<!-- ─── Woolworths ─── -->
+<div class="app-section ww" id="woolworths">
+  <div class="app-section-header">
+    <span class="app-section-flag">🇦🇺</span>
+    <div>
+      <p class="app-section-title">Woolworths_app-AU</p>
+      <p class="app-section-subtitle">Australia · Grocery &amp; Supermarket App</p>
+    </div>
+  </div>
+
+  <div class="start-time">&#9200; Start time: 4:30 AM</div>
+
+  <div class="run-step">
+    <div class="run-step-num">1</div>
+    <div class="run-step-body">
+      <p><span class="terminal-badge">Terminal 1</span> <strong>Start Appium server</strong></p>
+      <p>Open a terminal and launch the Appium server. Keep this terminal running throughout the entire session.</p>
+      <pre><code>appium</code></pre>
+    </div>
+  </div>
+
+  <div class="run-step">
+    <div class="run-step-num">2</div>
+    <div class="run-step-body">
+      <p><span class="terminal-badge">Terminal 2</span> <strong>Activate Python environment</strong></p>
+      <p>Open a second terminal and navigate to the project directory, then activate the virtual environment.</p>
+      <pre><code>cd App_Instrumentation
+source App_env/bin/activate</code></pre>
+    </div>
+  </div>
+
+  <div class="run-step">
+    <div class="run-step-num">3</div>
+    <div class="run-step-body">
+      <p><strong>Run search crawl</strong> <span class="time-badge">~1 hour 30 min</span></p>
+      <p>In Terminal 2, run the search script. This crawls search result pages and collects XML dumps and screenshots.</p>
+      <pre><code>python woolworth_app_search.py</code></pre>
+      <p style="color:#5E6C84;font-size:13px;">Wait for this to complete fully before proceeding to the next step.</p>
+    </div>
+  </div>
+
+  <div class="run-step">
+    <div class="run-step-num">4</div>
+    <div class="run-step-body">
+      <p><strong>Run listing crawl</strong> <span class="time-badge">~30 min</span></p>
+      <p>Once the search crawl has completed, run the listing script to collect product detail page data.</p>
+      <pre><code>python woolworth_app_listing.py</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Tokopedia ─── -->
+<div class="app-section toko" id="tokopedia">
+  <div class="app-section-header">
+    <span class="app-section-flag">🇮🇩</span>
+    <div>
+      <p class="app-section-title">Tokopedia_app-ID</p>
+      <p class="app-section-subtitle">Indonesia · E-commerce App</p>
+    </div>
+  </div>
+
+  <div class="start-time">&#9200; Start time: 8:30 AM</div>
+
+  <div class="run-step">
+    <div class="run-step-num">1</div>
+    <div class="run-step-body">
+      <p><span class="terminal-badge">Terminal 1</span> <strong>Start Appium server</strong></p>
+      <p>Open a terminal and launch the Appium server. Keep this terminal running throughout the entire session.</p>
+      <pre><code>appium</code></pre>
+    </div>
+  </div>
+
+  <div class="run-step">
+    <div class="run-step-num">2</div>
+    <div class="run-step-body">
+      <p><span class="terminal-badge">Terminal 2</span> <strong>Activate Python environment</strong></p>
+      <p>Open a second terminal and navigate to the project directory, then activate the virtual environment.</p>
+      <pre><code>cd App_Instrumentation
+source App_env/bin/activate</code></pre>
+    </div>
+  </div>
+
+  <div class="run-step">
+    <div class="run-step-num">3</div>
+    <div class="run-step-body">
+      <p><strong>Run search crawl</strong> <span class="time-badge">~2 hours</span></p>
+      <p>In Terminal 2, run the search script with the Tokopedia seed file as the argument.</p>
+      <pre><code>python tokopedia_app_search.py tokopedia_search_seed.txt</code></pre>
+      <p style="color:#5E6C84;font-size:13px;">Wait for this to complete fully before proceeding to the next step.</p>
+    </div>
+  </div>
+
+  <div class="run-step">
+    <div class="run-step-num">4</div>
+    <div class="run-step-body">
+      <p><strong>Run listing crawl</strong> <span class="time-badge">~30 min</span></p>
+      <p>Once the search crawl has completed, run the listing script.</p>
+      <pre><code>python tokopedia_app_listing.py</code></pre>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Talabat ─── -->
+<div class="app-section tala" id="talabat">
+  <div class="app-section-header">
+    <span class="app-section-flag">🇦🇪</span>
+    <div>
+      <p class="app-section-title">Talabat_app-AE</p>
+      <p class="app-section-subtitle">UAE · Food Delivery App</p>
+    </div>
+  </div>
+
+  <div class="run-step">
+    <div class="run-step-num">1</div>
+    <div class="run-step-body">
+      <p><span class="terminal-badge">Terminal 1</span> <strong>Start Appium server</strong></p>
+      <p>Open a terminal and launch the Appium server. Keep this terminal running throughout the entire session.</p>
+      <pre><code>appium</code></pre>
+    </div>
+  </div>
+
+  <div class="run-step">
+    <div class="run-step-num">2</div>
+    <div class="run-step-body">
+      <p><span class="terminal-badge">Terminal 2</span> <strong>Activate Python environment</strong></p>
+      <p>Open a second terminal and navigate to the project directory, then activate the virtual environment.</p>
+      <pre><code>cd App_Instrumentation
+source App_env/bin/activate</code></pre>
+    </div>
+  </div>
+
+  <div class="run-step">
+    <div class="run-step-num">3</div>
+    <div class="run-step-body">
+      <p><strong>Run search crawl</strong> <span class="time-badge">~1 hour 30 min</span></p>
+      <p>In Terminal 2, run the search script with the Talabat search seed file as the argument.</p>
+      <pre><code>python talabat_app_search.py talabat_search_seed_file.txt</code></pre>
+      <p style="color:#5E6C84;font-size:13px;">Wait for this to complete fully before proceeding to the next step.</p>
+    </div>
+  </div>
+
+  <div class="run-step">
+    <div class="run-step-num">4</div>
+    <div class="run-step-body">
+      <p><strong>Run listing crawl</strong> <span class="time-badge">~30 min</span></p>
+      <p>Once the search crawl has completed, run the listing script with the Talabat listing seed file.</p>
+      <pre><code>python talabat_app_listing.py talabat_listing_seed_file.txt</code></pre>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<h2>4. Detailed Process Steps</h2>
+
+<div class="step-block">
+  <div class="step-header">
+    <div class="step-badge">1</div>
+    <div class="step-title">App Instrumentation Crawls</div>
+  </div>
+  <p>Crawl jobs are run for each of the 3 apps to instrument their pages and collect raw data.</p>
+  <p><strong>What is collected:</strong></p>
+  <ul>
+    <li><strong>XML Dumps</strong> — Raw XML response data from the app's pages, capturing product listings, categories, and metadata.</li>
+    <li><strong>Screenshots</strong> — Visual screenshots of the crawled URLs, used for validation and QA purposes.</li>
+  </ul>
+  <p><strong>Output location:</strong> <code>[path/to/crawl/output/]</code></p>
+  <p>The crawl is configured per app using the seed file (see Step 2). The frequency and scope of crawls can be adjusted based on the app's update cycle.</p>
+</div>
+
+<div class="step-block">
+  <div class="step-header">
+    <div class="step-badge teal">2</div>
+    <div class="step-title">Seed File Ingestion</div>
+  </div>
+  <p>Each app has a corresponding <strong>seed file</strong> that drives the crawl and extraction process. The seed file contains two key fields:</p>
+  <table>
+    <tr><th>Field</th><th>Description</th><th>Example</th></tr>
+    <tr><td><code>seed_url</code></td><td>The starting URL(s) for the crawl. The crawler begins traversal from these URLs.</td><td><code>https://app.example.com/category/shoes</code></td></tr>
+    <tr><td><code>meta_info</code></td><td>Metadata associated with the seed URL — such as category name, keyword, app identifier, and any configuration flags.</td><td><code>{"category": "shoes", "keyword": "running shoes"}</code></td></tr>
+  </table>
+  <p>The seed file is loaded at the start of both the crawl and the extraction phases. It acts as the source of truth for what data to collect and how to label it.</p>
+  <p><strong>Seed file location:</strong> <code>[path/to/seed_file]</code></p>
+</div>
+
+<div class="step-block">
+  <div class="step-header">
+    <div class="step-badge purple">3</div>
+    <div class="step-title">Local Data Extraction via CMv3</div>
+  </div>
+  <p>This step transforms the raw XML dumps into structured product data using the CMv3 extraction framework. The process runs locally and involves the following sub-steps:</p>
+  <ol>
+    <li><strong>Fetch regex configuration from CMv3 API</strong> — <code>extractor.py</code> makes an API call to the CMv3 service to retrieve the regex patterns associated with the app. These patterns define how product fields (title, price, URL, etc.) are identified within the XML.</li>
+    <li><strong>Apply regex on XML dump</strong> — The regex patterns are applied on the collected XML dump for each <code>seed_url</code>. This parses out the relevant product attributes from the raw markup.</li>
+    <li><strong>Output JSON file</strong> — The extracted data is written to a JSON file. The file contains all products grouped by keyword or category, as defined in the seed file's <code>meta_info</code>.</li>
+  </ol>
+
+  <h3>Key Component: extractor.py</h3>
+  <table>
+    <tr><th>Attribute</th><th>Detail</th></tr>
+    <tr><td>File path</td><td><code>crawler/extractor.py</code></td></tr>
+    <tr><td>Role</td><td>Orchestrates the extraction — calls CMv3 for config, applies regex, writes JSON</td></tr>
+    <tr><td>Input</td><td>XML dump file path, seed file path</td></tr>
+    <tr><td>Output</td><td>JSON file with product data per keyword/category</td></tr>
+    <tr><td>API dependency</td><td>CMv3 API (regex config endpoint)</td></tr>
+  </table>
+
+  <h3>Sample JSON Output Structure</h3>
+  <pre><code>{
+  "keyword": "running shoes",
+  "category": "shoes",
+  "app": "App 1",
+  "products": [
+    {
+      "title": "Nike Air Zoom",
+      "price": "₹5,499",
+      "url": "https://app.example.com/product/nike-air-zoom",
+      "rank": 1
+    },
+    ...
+  ]
+}</code></pre>
+</div>
+
+<div class="step-block">
+  <div class="step-header">
+    <div class="step-badge amber">4</div>
+    <div class="step-title">JSON Output → Workspace Push</div>
+  </div>
+  <p>Once extraction is complete, the output JSON file is pushed to the <strong>workspace</strong>. The workspace acts as a staging area where files are organized by date before being consumed by the Kafka pipeline.</p>
+  <p><strong>Directory structure in workspace:</strong></p>
+  <pre><code>workspace/
+└── data/
+    └── YYYY-MM-DD/          ← today's data folder
+        ├── app1_keyword1.json
+        ├── app1_keyword2.json
+        ├── app2_keyword1.json
+        └── ...</code></pre>
+  <p>Files are named to reflect the app and keyword/category for easy identification and traceability.</p>
+</div>
+
+<div class="step-block">
+  <div class="step-header">
+    <div class="step-badge coral">5</div>
+    <div class="step-title">Crontab → Kafka Pipeline</div>
+  </div>
+  <p>A <strong>crontab job</strong> is configured in the workspace environment to periodically run commands that push data to Kafka. The job is triggered whenever a new JSON file lands in today's data folder.</p>
+
+  <h3>How it works</h3>
+  <ul>
+    <li>The crontab runs at a defined interval (e.g., every 15 minutes or hourly — <em>update with actual schedule</em>).</li>
+    <li>It scans the <code>workspace/data/YYYY-MM-DD/</code> folder for new or unprocessed files.</li>
+    <li>For each new file detected, the corresponding Kafka push command is executed.</li>
+    <li>Data is published to the Kafka topic associated with the app and category.</li>
+  </ul>
+
+  <h3>Crontab Configuration (example)</h3>
+  <pre><code># Run every 15 minutes — push new JSON files to Kafka
+*/15 * * * * /path/to/scripts/kafka_push.sh /workspace/data/$(date +\%Y-\%m-\%d)/</code></pre>
+
+  <h3>Kafka Topic Mapping</h3>
+  <table>
+    <tr><th>App</th><th>Kafka Topic</th><th>Notes</th></tr>
+    <tr><td><em>App 1</em></td><td><code>[topic_name]</code></td><td><em>Add details</em></td></tr>
+    <tr><td><em>App 2</em></td><td><code>[topic_name]</code></td><td><em>Add details</em></td></tr>
+    <tr><td><em>App 3</em></td><td><code>[topic_name]</code></td><td><em>Add details</em></td></tr>
+  </table>
+</div>
+
+<hr>
+
+<h2>5. Data Flow Summary</h2>
+<table>
+  <tr><th>Stage</th><th>Input</th><th>Process</th><th>Output</th></tr>
+  <tr><td>Crawl</td><td>seed_url</td><td>App instrumentation crawl job</td><td>XML dump, URL screenshots</td></tr>
+  <tr><td>Seed ingestion</td><td>Seed file</td><td>Parse meta_info + seed_url</td><td>Crawl config + extraction context</td></tr>
+  <tr><td>Extraction</td><td>XML dump + CMv3 regex config</td><td><code>extractor.py</code> applies regex</td><td>JSON file (products per keyword)</td></tr>
+  <tr><td>Workspace push</td><td>JSON file</td><td>Copy to today's dated folder</td><td>File in <code>workspace/data/YYYY-MM-DD/</code></td></tr>
+  <tr><td>Kafka push</td><td>JSON file in today's folder</td><td>Crontab triggers push command</td><td>Data published to Kafka topic</td></tr>
+</table>
+
+<hr>
+
+<h2>6. Dependencies &amp; Tools</h2>
+<table>
+  <tr><th>Component</th><th>Description</th><th>Owner / Docs</th></tr>
+  <tr><td>CMv3 API</td><td>Provides regex extraction configuration per app</td><td><em>[Link to CMv3 docs]</em></td></tr>
+  <tr><td><code>crawler/extractor.py</code></td><td>Core extraction script — reads XML, applies regex, writes JSON</td><td><em>[Link to repo]</em></td></tr>
+  <tr><td>Seed file</td><td>Defines crawl scope (seed_url + meta_info) per app</td><td><em>[Link to seed file location]</em></td></tr>
+  <tr><td>Workspace</td><td>Shared storage where JSON files are staged per date</td><td><em>[Link to workspace]</em></td></tr>
+  <tr><td>Kafka</td><td>Message queue receiving the extracted product data</td><td><em>[Link to Kafka setup]</em></td></tr>
+  <tr><td>Crontab</td><td>Scheduler for automated Kafka push commands</td><td><em>[Server / environment]</em></td></tr>
+</table>
+
+<hr>
+
+<h2>7. Open Items &amp; TODOs</h2>
+<table>
+  <tr><th>#</th><th>Item</th><th>Owner</th><th>Status</th></tr>
+  <tr><td>1</td><td>Fill in app names and descriptions in the Scope table</td><td></td><td><span class="tag">Pending</span></td></tr>
+  <tr><td>2</td><td>Confirm crontab schedule and add exact cron expression</td><td></td><td><span class="tag">Pending</span></td></tr>
+  <tr><td>3</td><td>Add Kafka topic names per app</td><td></td><td><span class="tag">Pending</span></td></tr>
+  <tr><td>4</td><td>Attach architecture diagram to this page</td><td></td><td><span class="tag">Pending</span></td></tr>
+  <tr><td>5</td><td>Document error handling and retry logic in extractor.py</td><td></td><td><span class="tag">Pending</span></td></tr>
+</table>
+
+<hr>
+<p style="font-size:13px;color:#8993A4;">Page maintained by the Data Engineering team. For questions, reach out via <em>[Slack channel]</em>.</p>
+
+</body>
+</html>
